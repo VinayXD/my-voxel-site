@@ -2,13 +2,11 @@
 // Creates DOM elements for CSS3D panels & HUD.
 // Panels are restyled via /src/styles/ui.css
 
-import babylonIcon from '/assets/Icon/babylonjs.png?url';
-import typescriptIcon from '/assets/Icon/Typescript.png?url';
-import reactIcon from '/assets/Icon/React.png?url';
-import viteIcon from '/assets/Icon/viteicon.png?url';
-import blenderIcon from '/assets/Icon/Blender.png?url';
-import blockbenchIcon from '/assets/Icon/Blockbench.png?url';
-import figmaIcon from '/assets/Icon/Figma.png?url';
+// note: no leading slash, no ?url
+const ICON = '/assets/icon';
+const RESUME_URL = '/assets/Vinay_Bloxd.pdf';
+
+
 
 function q<T extends Element>(root: ParentNode, sel: string) {
   return root.querySelector(sel) as T | null;
@@ -20,24 +18,33 @@ export function createHeroPanelEl() {
   el.style.width = '420px';
 
   el.innerHTML = `
-    <h1> Vinay Peddireddy</h1>
+    <h1>Vinay Peddireddy</h1>
     <h2>Showcasing my Voxel Game</h2>
     <p class="small">Fly and explore — This website is meant to showcase work built using a tech stack similar to Bloxd.io. Inspired to work with the Bloxd.io team, I created this site to highlight the mechanics and features I developed in a voxel prototype.</p>
     <div class="row mt-10">
-      <button class="btn" id="aboutBtn" aria-controls="aboutBox" aria-expanded="false">About this section</button>
-      <a class="btn" href="#" id="cta">Contact</a>
+      <button class="btn" id="aboutBtn" aria-controls="aboutBox" aria-expanded="false">
+        Why this site? (tap to read)
+      </button>
+      <a class="btn" id="cta" href="${RESUME_URL}" download="Vinay_Peddireddy_Resume.pdf" rel="noopener">
+  Download Résumé
+</a>
+
     </div>
     <div class="collapsible" id="aboutBox" role="region" aria-label="About this site">
-      <p class="small">This site runs on Three.js + TypeScript. UI is true 3D (CSS3D), billboarded panels styled via <code>ui.css</code>.</p>
+      <p class="small"><strong>TL;DR:</strong> I built this to <em>show</em>, not tell — a playful way to browse my projects, design thinking, and style.</p>
+      <p class="small">Expect quick-read panels, smooth flow between projects, and tiny notes on why I chose certain mechanics and visuals. It should feel like exploring a build, not reading a report.</p>
+      <p class="small">Under the hood: Three.js + TypeScript with true 3D UI (CSS3D), styled via <code>ui.css</code>.</p>
     </div>
   `;
 
   const aboutBtn = q<HTMLButtonElement>(el, '#aboutBtn')!;
   const aboutBox = q<HTMLDivElement>(el, '#aboutBox')!;
+
   const toggleAbout = () => {
     const isOpen = aboutBox.classList.toggle('open');
     aboutBtn.setAttribute('aria-expanded', String(isOpen));
   };
+
   aboutBtn.addEventListener('click', toggleAbout);
   aboutBtn.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -66,7 +73,7 @@ export function createSocialPanelEl() {
       </a>
 
       <a class="card2" href="https://vinayreddypeddireddy.netlify.app/" 
-         target="_blank" rel="noopener" aria-label="Portfolio" title="Portfolio Website">
+         target="_blank" rel="noopener" aria-label="Portfolio" title="My Portfolio Website">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="30" height="30" class="portfolio" aria-hidden="true">
           <path d="M24,4C12.972,4,4,12.972,4,24s8.972,20,20,20s20-8.972,20-20S35.028,4,24,4z M24,10c3.866,0,7,3.134,7,7s-3.134,7-7,7
           s-7-3.134-7-7S20.134,10,24,10z M24,38.4c-5.174,0-9.764-2.622-12.476-6.606c1.026-2.747,4.216-4.794,8.476-4.794h8
@@ -76,8 +83,8 @@ export function createSocialPanelEl() {
     </div>
 
     <div class="down">
-      <a class="card3" href="https://github.com/VinayXD" 
-         target="_blank" rel="noopener" aria-label="GitHub" title="GitHub Profile">
+      <a class="card3" href="https://github.com/VinayXD/bloxd_Mini_Game" 
+         target="_blank" rel="noopener" aria-label="GitHub" title="GitHub link for project code">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" width="30" height="30" class="github" aria-hidden="true">
           <path d="M15,3C8.373,3,3,8.373,3,15c0,5.623,3.872,10.328,9.092,11.63C12.036,26.468,12,26.28,12,26.047v-2.051 c-0.487,0-1.303,0-1.508,0c-0.821,0-1.551-0.353-1.905-1.009c-0.393-0.729-0.461-1.844-1.435-2.526 c-0.289-0.227-0.069-0.486,0.264-0.451c0.615,0.174,1.125,0.596,1.605,1.222c0.478,0.627,0.703,0.769,1.596,0.769 c0.433,0,1.081-0.025,1.691-0.121c0.328-0.833,0.895-1.6,1.588-1.962c-3.996-0.411-5.903-2.399-5.903-5.098 c0-1.162,0.495-2.286,1.336-3.233C9.053,10.647,8.706,8.73,9.435,8c1.798,0,2.885,1.166,3.146,1.481C13.477,9.174,14.461,9,15.495,9 c1.036,0,2.024,0.174,2.922,0.483C18.675,9.17,19.763,8,21.565,8c0.732,0.731,0.381,2.656,0.102,3.594 c0.836,0.945,1.328,2.066,1.328,3.226c0,2.697-1.904,4.684-5.894,5.097C18.199,20.49,19,22.1,19,23.313v2.734 c0,0.104-0.023,0.179-0.035,0.268C23.641,24.676,27,20.236,27,15C27,8.373,21.627,3,15,3z"/>
         </svg>
@@ -108,25 +115,25 @@ export function createSkillsPanelEl() {
     <h2 class="subhead">Tools used</h2>
     <div class="row mt-6 tools" role="list" aria-label="Tools">
       <span class="badge is-icon" title="Babylon.js" role="listitem">
-        <img src="${babylonIcon}" alt="Babylon.js logo" loading="lazy" decoding="async">
+        <img src="${ICON}/babylonjs.png" alt="Babylon.js" loading="lazy" decoding="async">
       </span>
       <span class="badge is-icon" title="TypeScript" role="listitem">
-        <img src="${typescriptIcon}" alt="TypeScript logo" loading="lazy" decoding="async">
+        <img src="${ICON}/typescript.png" alt="TypeScript" loading="lazy" decoding="async">
       </span>
       <span class="badge is-icon" title="React" role="listitem">
-        <img src="${reactIcon}" alt="React logo" loading="lazy" decoding="async">
+        <img src="${ICON}/react.png" alt="React" loading="lazy" decoding="async">
       </span>
       <span class="badge is-icon" title="Vite" role="listitem">
-        <img src="${viteIcon}" alt="Vite logo" loading="lazy" decoding="async">
+        <img src="${ICON}/viteicon.png" alt="Vite" loading="lazy" decoding="async">
       </span>
       <span class="badge is-icon" title="Blender" role="listitem">
-        <img src="${blenderIcon}" alt="Blender logo" loading="lazy" decoding="async">
+        <img src="${ICON}/blender.png" alt="Blender" loading="lazy" decoding="async">
       </span>
       <span class="badge is-icon" title="Blockbench" role="listitem">
-        <img src="${blockbenchIcon}" alt="Blockbench logo" loading="lazy" decoding="async">
+        <img src="${ICON}/blockbench.png" alt="Blockbench" loading="lazy" decoding="async">
       </span>
       <span class="badge is-icon" title="Figma" role="listitem">
-        <img src="${figmaIcon}" alt="Figma logo" loading="lazy" decoding="async">
+        <img src="${ICON}/figma.png" alt="Figma" loading="lazy" decoding="async">
       </span>
     </div>
 
@@ -210,18 +217,18 @@ const tiles: TileData[] = [
   noteTr:'1-block step-up for uninterrupted traversal across terrain.', 
   noteB:'Modular input/action mapping designed for easy extension.'
 },
-
-{ id:'p3', title:'Game Physics',
-  img:'assets/projects/physics.jpg',
-  video:'assets/projects/fp4.mp4',
-  poster:'assets/projects/physics.jpg',
-  summary:'I wrote a physics layer around an AABB collider with tuned gravity/jump for responsive movement.',
-  detail:'Reliable grounded checks, slope handling, step height. Basic wall/ceiling slide and velocity damping hooks. Parameters exposed for quick feel tuning.',
-  label:'Physics', 
-  noteTl:'Reliable grounded checks, slope handling, step height.', 
-  noteTr:'Basic wall/ceiling slide and velocity damping hooks.', 
-  noteB:'Parameters exposed for quick feel tuning.'
+{ id:'p3', title:'Modelling & Rigging/Animation',
+  img:'assets/projects/models.jpg',
+  video:'assets/projects/fp7.mp4',
+  poster:'assets/projects/models.jpg',
+  summary:'I modelled every game asset myself in Blockbench and rigged/animated them in Blender.',
+  detail:'Player, moose, sword, and fireball modelled to spec. Clean bone naming and pivots for easy attachments. Layered animation for on top of other animation.',
+  label:'Assets', 
+  noteTl:'Player, moose, sword, and fireball modelled to spec.', 
+  noteTr:'Clean bone naming and pivots for easy attachments.', 
+  noteB:'Layered animation for on top of other animation.'
 },
+
 
 { id:'p4', title:'FPS Hands, Weapons & Animation',
   img:'assets/projects/fps-hands.jpg',
@@ -234,8 +241,19 @@ const tiles: TileData[] = [
   noteTr:'Behaviour states (idle/attack/interact) with clean transitions.', 
   noteB:'Bone-based attachment (e.g., sword to right-hand bone) on the same layer for proper intersection.'
 },
+{ id:'p5', title:'Textures & Block VFX',
+  img:'assets/projects/textures.jpg',
+  video:'assets/projects/Fp6.mp4',
+  poster:'assets/projects/textures.jpg',
+  summary:'I hand-painted block textures in Blockbench and added a flipbook effect for breaking blocks.',
+  detail:'Consistent atlas/UVs; crisp filtering for readable pixel art. Flipbook animation for breaking the block. Seamless continues textures for blocks.',
+  label:'Textures', 
+  noteTl:'Consistent atlas/UVs; crisp filtering for readable pixel art.', 
+  noteTr:'Flipbook animation for breaking the block.', 
+  noteB:'Seamless continues textures for blocks.'
+},
 
-{ id:'p5', title:'NPC Prototype',
+{ id:'p6', title:'NPC Prototype',
   img:'assets/projects/npc.jpg',
   video:'assets/projects/fp5.mp4',
   poster:'assets/projects/npc.jpg',
@@ -259,16 +277,16 @@ const tiles: TileData[] = [
   noteB:'Seamless continues textures for blocks.'
 },
 
-{ id:'p7', title:'Modelling & Rigging/Animation',
-  img:'assets/projects/models.jpg',
-  video:'assets/projects/fp7.mp4',
-  poster:'assets/projects/models.jpg',
-  summary:'I modelled every game asset myself in Blockbench and rigged/animated them in Blender.',
-  detail:'Player, moose, sword, and fireball modelled to spec. Clean bone naming and pivots for easy attachments. Layered animation for on top of other animation.',
-  label:'Assets', 
-  noteTl:'Player, moose, sword, and fireball modelled to spec.', 
-  noteTr:'Clean bone naming and pivots for easy attachments.', 
-  noteB:'Layered animation for on top of other animation.'
+{ id:'p7', title:'Game Physics',
+  img:'assets/projects/physics.jpg',
+  video:'assets/projects/fp4.mp4',
+  poster:'assets/projects/physics.jpg',
+  summary:'I wrote a physics layer around an AABB collider with tuned gravity/jump for responsive movement.',
+  detail:'Reliable grounded checks, slope handling, step height. Basic wall/ceiling slide and velocity damping hooks. Parameters exposed for quick feel tuning.',
+  label:'Physics', 
+  noteTl:'Reliable grounded checks, slope handling, step height.', 
+  noteTr:'Basic wall/ceiling slide and velocity damping hooks.', 
+  noteB:'Parameters exposed for quick feel tuning.'
 },
 
 { id:'p8', title:'Performance & Debug',

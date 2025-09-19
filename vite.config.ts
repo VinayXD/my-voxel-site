@@ -1,7 +1,10 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react' // or '@vitejs/plugin-react-swc'
 
-// Replace 'my-voxel-site' with your repo name
-export default defineConfig({
-  base: '/my-voxel-site/',
-});
-
+export default defineConfig(({ mode }) => {
+  const base = mode === 'production' ? '/my-voxel-site/' : '/'
+  return {
+    base,         // or set base: './' if you prefer the simple Pages-safe option
+    plugins: [react()],
+  }
+})
