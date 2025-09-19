@@ -8,12 +8,13 @@ import { UIManager } from './systems/UIManager';
 import { scaleObjectToHeight /*, addBoxHelper*/ } from './utils/sizeTools';
 import { MouseFollower } from './systems/MouseFollower';
 import { CameraIndicator } from './ui/CameraIndicator';
-// If you currently <link> ui.css in index.html, you can keep it,
-// but importing here is the Vite-friendly way (HMR etc):
-// import './styles/ui.css';
+
+// Asset URLs (Vite will rewrite these for GitHub Pages)
+import houseUrl from '/assets/forest_house.glb?url';
+import hummingUrl from '/assets/humming.png?url';
 
 async function bootstrap() {
-  // 1) Get a real canvas (and recover if #app is not actually a <canvas>)
+  // 1) Canvas (recover if #app isn't a <canvas>)
   const el = document.getElementById('app');
   const canvas =
     el instanceof HTMLCanvasElement
@@ -28,11 +29,21 @@ async function bootstrap() {
   // 2) Scene + renderer
   const { scene, renderer } = createSceneAndRenderer(canvas);
 
-  // Make sure we see *something* even before assets finish loading
+  // ---- Renderer perf choices (can be overridden in createSceneAndRenderer too) ----
+  // Shadows off unless you truly need them:
+  renderer.shadowMap.enabled = false;
+  // Tone mapping / color space are good defaults:
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+
+  // Adaptive DPR setup
+  const DPR_MAX = Math.min(window.devicePixelRatio, 1.6);
+  const DPR_MIN = 0.75;
+  let adaptiveDPR = DPR_MAX;
+
   const setSize = () => {
-    const w = window.innerWidth, h = window.innerHeight;
-    renderer.setSize(w, h, false);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(adaptiveDPR);
+    renderer.setSize(window.innerWidth, window.innerHeight, false);
   };
   setSize();
   window.addEventListener('resize', setSize);
@@ -47,9 +58,10 @@ async function bootstrap() {
   });
   const camera = cameraRig.camera;
 
-  // 4) Camera HUD + Controls (safe even without a model)
+  // 4) HUD + Controls
   const camHud = new CameraIndicator({});
   const controls = createControls(camera, renderer.domElement);
+  controls.enableDamping = true; // smoother + cheaper
   controls.addEventListener('change', () => camHud.syncFromCamera(camera, controls.target));
   applyControlsLimits(controls, {
     minDistance: 2.2,
@@ -63,12 +75,12 @@ async function bootstrap() {
   });
   controls.minDistance = 0.4;
 
-  // 5) Background + basic light (so we immediately see the bg color)
+  // 5) Background + basic light
   scene.background = new THREE.Color('#f5eddc');
   scene.environment = null;
-  addLightRig(scene, { intensity: 1.3, warmKey: true });
+  addLightRig(scene, { intensity: 1.1, warmKey: true }); // slightly lower
 
-  // 6) UI + Sections — can be built now; we’ll configure with the house later
+  // 6) UI + Sections
   const ui = new UIManager(scene, camera);
   const sections = new SectionManager(camera, controls, ui);
 
@@ -88,19 +100,48 @@ async function bootstrap() {
   let houseRoot: THREE.Object3D | null = null;
   const follower = new MouseFollower(camera);
 
-  // 7) Minimal loop STARTS NOW (no awaits before this)
+  // 7) Loop (start immediately)
   const clock = new THREE.Clock();
   const onResize = () => ui.onResize(window.innerWidth, window.innerHeight);
   window.addEventListener('resize', onResize);
   onResize();
 
+  // Pause rendering when the tab is hidden
+  let paused = false;
+  document.addEventListener('visibilitychange', () => { paused = document.hidden; });
+
+  // Adaptive DPR controller
+  let accum = 0, samples = 0;
+  const TARGET_FPS = 60;
+
+  function updateAdaptiveDPR(dt: number) {
+    accum += dt; samples++;
+    if (accum >= 1.0) {
+      const fps = samples / accum;
+      // downscale fast if too slow, upscale gently if we have headroom
+      if (fps < TARGET_FPS - 8 && adaptiveDPR > DPR_MIN) {
+        adaptiveDPR = Math.max(DPR_MIN, adaptiveDPR - 0.12);
+        setSize();
+      } else if (fps > TARGET_FPS + 5 && adaptiveDPR < DPR_MAX) {
+        adaptiveDPR = Math.min(DPR_MAX, adaptiveDPR + 0.06);
+        setSize();
+      }
+      accum = 0; samples = 0;
+    }
+  }
+
   (function animate() {
     requestAnimationFrame(animate);
+    if (paused) return;
+
     const dt = clock.getDelta();
-    sections.update(dt);
+    updateAdaptiveDPR(dt);
+
+    sections.update(dt);   // keep light; avoid heavy per-frame traversals inside
     follower.update(dt);
     ui.update(dt);
-    controls.update();
+    controls.update();     // enableDamping=true needs this
+
     renderer.render(scene, camera);
     ui.render();
   })();
@@ -108,7 +149,7 @@ async function bootstrap() {
   // 8) Load assets *safely* in the background
   try {
     // House
-    houseRoot = await loadForestHouse('/assets/forest_house.glb');
+    houseRoot = await loadForestHouse(houseUrl);
     scene.add(houseRoot);
 
     // Orientation + scale
@@ -117,21 +158,39 @@ async function bootstrap() {
     houseRoot.scale.multiplyScalar(1.5);
     const DESIRED_HEIGHT = 8.0;
     scaleObjectToHeight(houseRoot, DESIRED_HEIGHT);
-    // addBoxHelper(houseRoot);
 
-    // Sections that depend on the final bounds
+    // Cull & simplify materials for perf
+    houseRoot.traverse((o: any) => {
+      if (o.isMesh) {
+        o.frustumCulled = true;
+        o.castShadow = false;
+        o.receiveShadow = false;
+        const m = o.material;
+        if (m) {
+          // Drop costly toggles if present
+          if ('transparent' in m && m.transparent) {
+            m.depthWrite = false;
+          }
+          if ('skinning' in m) m.skinning = false;
+          if ('morphTargets' in m) m.morphTargets = false;
+          if ('toneMapped' in m) m.toneMapped = true;
+        }
+      }
+    });
+
+    // Sections that depend on bounds
     sections.configureFromObject(houseRoot, { padding: 1.08 });
 
-    // Adjust hero stop
+    // Adjust waypoints
     {
       const dy = -2;
       const heroWP = sections.getWaypoint(SectionId.Hero);
-      const newPos = heroWP.pos.clone().add(new THREE.Vector3(0, dy, 0));
-      const newTar = heroWP.target.clone().add(new THREE.Vector3(0, dy, 0));
-      sections.setWaypoint(SectionId.Hero, newPos, newTar);
+      sections.setWaypoint(
+        SectionId.Hero,
+        heroWP.pos.clone().add(new THREE.Vector3(0, dy, 0)),
+        heroWP.target.clone().add(new THREE.Vector3(0, dy, 0))
+      );
     }
-
-    // Raise projects stop
     {
       const upDy = 1;
       const wp = sections.getWaypoint(SectionId.Projects);
@@ -165,12 +224,12 @@ async function bootstrap() {
     follower.setRopeLengthImmediate(0.12);
     follower.B.traverse((o: THREE.Object3D) => o.layers.set(1));
 
-    await follower.applyUnlitTextureFromPNG('/assets/humming.png', {
+    await follower.applyUnlitTextureFromPNG(hummingUrl, {
       toneMapped: false,
       transparent: true,
       doubleSided: false,
       alphaTest: 0.0,
-      anisotropy: 8,
+      anisotropy: 4, // slightly lower = cheaper
     });
 
     // Final anchor over roof
@@ -178,15 +237,14 @@ async function bootstrap() {
       const box = new THREE.Box3().setFromObject(houseRoot);
       const center = box.getCenter(new THREE.Vector3());
       const topY = box.max.y;
-      const anchorOffset = 0.6;
-      follower.setAnchor(new THREE.Vector3(center.x, topY + anchorOffset, center.z));
+      follower.setAnchor(new THREE.Vector3(center.x, topY + 0.6, center.z));
       follower.setBaseLength(0.6);
       follower.setRopeLimits(0.25, 2.0);
     }
 
   } catch (err) {
     console.error('Asset load failed:', err);
-    // Visual fallback so you still see *something* if assets are missing
+    // Fallback so you still see *something*
     const fallback = new THREE.Mesh(
       new THREE.BoxGeometry(1, 1, 1),
       new THREE.MeshStandardMaterial({ color: 0x66ccff, roughness: 0.9 })

@@ -1,7 +1,7 @@
 // MouseFollower.ts (single-layer version: no layers used anywhere)
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-
+import hummingUrl from '/assets/Humming.glb?url';
 /**
  * MouseFollower — camera-parallel plane; face-plane yaw + edge-inward yaw
  * - Plane is always parallel to camera (updated every frame).
@@ -156,7 +156,7 @@ private forwardLimit: number | null = null;  // max distance along camForward fr
     this.humBobNoiseTarget  = (Math.random() * 2 - 1) * this.humNoiseAmp * 0.7;
 
     // Load model
-    this.loadBird("/assets/Humming.glb", {
+    this.loadBird(hummingUrl, {
       scale: 0.03,
       rotate: { x: 0, y: 0, z: 0 },
       offset: new THREE.Vector3(0, 0, 0),

@@ -142,17 +142,6 @@ export function createSkillsPanelEl() {
   return el;
 }
 
-type TileData = {
-  id: string;
-  title: string;
-  img: string;
-  summary: string;
-  detail: string;
-  label: string;
-  noteTl?: string;
-  noteTr?: string;
-  noteB?: string;
-};
 
 // src/ui/sections.ts
 
