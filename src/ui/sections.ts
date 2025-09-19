@@ -2,6 +2,14 @@
 // Creates DOM elements for CSS3D panels & HUD.
 // Panels are restyled via /src/styles/ui.css
 
+import babylonIcon from '/assets/Icon/babylonjs.png?url';
+import typescriptIcon from '/assets/Icon/Typescript.png?url';
+import reactIcon from '/assets/Icon/React.png?url';
+import viteIcon from '/assets/Icon/viteicon.png?url';
+import blenderIcon from '/assets/Icon/Blender.png?url';
+import blockbenchIcon from '/assets/Icon/Blockbench.png?url';
+import figmaIcon from '/assets/Icon/Figma.png?url';
+
 function q<T extends Element>(root: ParentNode, sel: string) {
   return root.querySelector(sel) as T | null;
 }
@@ -94,31 +102,31 @@ export function createSocialPanelEl() {
 export function createSkillsPanelEl() {
   const el = document.createElement('div');
   el.className = 'panel';
- el.innerHTML = `
+  el.innerHTML = `
     <h1>Tools & Skills</h1>
 
     <h2 class="subhead">Tools used</h2>
     <div class="row mt-6 tools" role="list" aria-label="Tools">
       <span class="badge is-icon" title="Babylon.js" role="listitem">
-        <img src="/assets/Icon/babylonjs.png" alt="Babylon.js logo" loading="lazy" decoding="async">
+        <img src="${babylonIcon}" alt="Babylon.js logo" loading="lazy" decoding="async">
       </span>
       <span class="badge is-icon" title="TypeScript" role="listitem">
-        <img src="/assets/Icon/Typescript.png" alt="TypeScript logo" loading="lazy" decoding="async">
+        <img src="${typescriptIcon}" alt="TypeScript logo" loading="lazy" decoding="async">
       </span>
       <span class="badge is-icon" title="React" role="listitem">
-        <img src="/assets/Icon/React.png" alt="React logo" loading="lazy" decoding="async">
+        <img src="${reactIcon}" alt="React logo" loading="lazy" decoding="async">
       </span>
       <span class="badge is-icon" title="Vite" role="listitem">
-        <img src="/assets/Icon/viteicon.png" alt="Vite logo" loading="lazy" decoding="async">
+        <img src="${viteIcon}" alt="Vite logo" loading="lazy" decoding="async">
       </span>
       <span class="badge is-icon" title="Blender" role="listitem">
-        <img src="/assets/Icon/Blender.png" alt="Blender logo" loading="lazy" decoding="async">
+        <img src="${blenderIcon}" alt="Blender logo" loading="lazy" decoding="async">
       </span>
       <span class="badge is-icon" title="Blockbench" role="listitem">
-        <img src="/assets/Icon/Blockbench.png" alt="Blockbench logo" loading="lazy" decoding="async">
+        <img src="${blockbenchIcon}" alt="Blockbench logo" loading="lazy" decoding="async">
       </span>
       <span class="badge is-icon" title="Figma" role="listitem">
-        <img src="/assets/Icon/Figma.png" alt="Figma logo" loading="lazy" decoding="async">
+        <img src="${figmaIcon}" alt="Figma logo" loading="lazy" decoding="async">
       </span>
     </div>
 
@@ -126,19 +134,17 @@ export function createSkillsPanelEl() {
 
     <h2 class="subhead mt-6">Skills</h2>
     <div class="row mt-6 skills" role="list" aria-label="Skills">
-    <span class="chip" role="listitem">Engine Development</span>
+      <span class="chip" role="listitem">Engine Development</span>
       <span class="chip" role="listitem">Game Designing</span>
       <span class="chip" role="listitem">Custom Game Physics</span>
       <span class="chip" role="listitem">3D Modeling</span>
       <span class="chip" role="listitem">Rigging & Animation</span>
       <span class="chip" role="listitem">Performance Optimization</span>
       <span class="chip" role="listitem">Design Pattern</span>
-      <span class="chip" role="listitem">UI/UX </span>
+      <span class="chip" role="listitem">UI/UX</span>
       <span class="chip" role="listitem">Git / Version Control</span>
     </div>
-
-    <p class="small mt-10"></p>
-  `; // unchanged (your tools & skills markup)
+  `;
   return el;
 }
 
