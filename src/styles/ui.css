@@ -1,0 +1,718 @@
+:root{
+  --bg: #0d0f1100;
+  --panel: rgba(255,255,255,0.08);
+  --ink: #000000;
+  --accent: #ffd166;
+  --accent-2: #06d6a0;
+  --accent-3: #4ecae6;
+  --shadow: 0 8px 24px rgba(0,0,0,0.35);
+  --radius: 14px;
+  --outline: 2px;
+ 
+  --tool-icon-size: 32px;   
+  --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+@font-face{
+  font-family: "Simple Nathalie";
+  src: url("/fonts/SimpleNathalie.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+* { box-sizing: border-box; }
+.css3d-root { position:fixed; inset:0; overflow:hidden; pointer-events:none; }
+.css3d-root * { font-family: var(--font); }
+
+/* Utility margins used above */
+.mt-8 { margin-top:4px; }
+.mt-10 { margin-top:6px; }
+
+/* Base panel */
+.panel {
+  pointer-events:auto;
+  color: var(--ink);
+  background: var(--panel);
+  border: var(--outline) solid var(--ink);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  backdrop-filter: blur(6px);
+  box-shadow: var(--shadow);
+  width: clamp(260px, 28vw, 420px);
+}
+
+.panel h1, .panel h2 { margin: 0 0 8px 0; }
+.panel h1 { font-size: 28px; letter-spacing: .5px; }
+.panel h2 { font-size: 18px; opacity:.9; }
+
+.row { display:flex; gap:8px; flex-wrap:wrap; }
+.badge {
+  border: var(--outline) solid var(--ink);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 13px;
+  background: transparent;
+}
+
+.btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  border: var(--outline) solid var(--ink);
+  padding: 8px 12px; border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font-weight: 600; cursor: pointer;
+  transition: transform .08s ease, background .2s ease, color .2s ease;
+}
+.btn:hover {
+  transform: translateY(-1px);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--ink);
+}
+.btn:active { transform: translateY(0); }
+
+.small { font-size: 12px; opacity: .85; }
+
+.grid {
+  display:grid; gap:10px;
+  grid-template-columns: repeat(3, 1fr);
+}
+.thumb {
+  aspect-ratio: 1 / 1; border: var(--outline) solid var(--ink);
+  border-radius: 10px; display:flex; align-items:center; justify-content:center;
+  font-size: 12px; background: transparent;
+}
+
+.hud {
+  pointer-events:auto;
+  display:flex; gap:8px; align-items:center; justify-content:center;
+  background: rgba(255, 255, 255, 0.55);
+  border: var(--outline) solid var(--ink);
+  border-radius: 999px;
+  padding: 4px;
+}
+.hud .btn { padding: 5px 9px; font-size: 13px; }
+
+.collapsible { margin-top:10px; display:none; }
+.collapsible.open { display:block; }
+
+/* WebGL canvas */
+#app {
+  position: fixed;
+  inset: 0;
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+}
+
+/* CSS3D layer stays transparent */
+.css3d, #css3d {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: transparent !important;
+  pointer-events: none;
+}
+
+/* =========================================
+   PROJECTS PANEL (wider so rail fits inside)
+   ========================================= */
+.panel[data-panel="projects"]{
+  width: clamp(520px, 50vw, 780px);
+}
+
+/* =========================
+   Projects Rail
+   ========================= */
+/* RAIL */
+.proj-rail {
+  width: 100%;
+  height: 300px; /* ↑ bigger to comfortably show a 16:9 image + meta */
+  display: flex;
+  --gap: 8px;
+  gap: var(--gap);
+  padding: 8px;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--panel) 75%, transparent);
+  border: var(--outline) solid var(--ink);
+  box-shadow: var(--shadow);
+
+  /* let note extend outside the rail */
+  overflow: visible;
+
+  /* make bottom-hanging note position relative to the rail's box */
+  position: relative;
+  z-index: 0;
+
+  /* sizing vars (JS should set --tiles: tiles.length) */
+  --tiles: 5;
+  --tile-expanded: min(760px, 74%); /* target width of hovered tile (tweakable) */
+  --tile-min-other: 48px;           /* how skinny non-active tiles may get */
+
+  /* idle math: each tile fills an equal slice of (100% - total gaps) */
+  --gaps-total: calc(var(--gap) * (var(--tiles) - 1));
+  --idle-basis: calc((100% - var(--gaps-total)) / var(--tiles));
+
+  /* note spacing below the rail */
+  --note-gap: 12px;
+}
+
+/* TILES — idle = auto-fill the row evenly (no overflow, smooth baseline) */
+.proj-tile {
+  display: flex;
+  position: relative;                /* needed for note centering per tile */
+  height: 100%;
+  flex: 0 0 var(--idle-basis);       /* equal slice when not hovering */
+  min-width: 0;                      /* prevent content-driven overflow */
+  overflow: visible;
+  border-radius: calc(var(--radius) - 8px);
+  background: #21212100;
+  border: 1px solid #000000;
+
+  /* smoother animation of width changes */
+  transition: flex-basis .42s cubic-bezier(.2,.7,.2,1), background .3s ease, transform .08s ease, box-shadow .2s ease;
+  will-change: flex-basis;
+  z-index: 1; /* tiles sit above the rope; rope uses negative z-index */
+}
+
+/* ================================
+   PURE CSS HOVER (stays in the box)
+   ================================ */
+.proj-rail:has(.proj-tile:hover){
+  /* exact gap math already set above */
+  --max-expanded: calc(100% - (var(--tile-min-other) * (var(--tiles) - 1)) - var(--gaps-total));
+  --expanded-effective: max(0px, min(var(--tile-expanded), var(--max-expanded)));
+  --avail-for-others: calc(100% - var(--expanded-effective) - var(--gaps-total));
+  --other-basis-raw: calc(var(--avail-for-others) / (var(--tiles) - 1));
+  --other-basis: max(1px, max(var(--tile-min-other), var(--other-basis-raw))); /* guard against vanishing tiles */
+}
+
+/* non-active tiles during hover */
+.proj-rail:has(.proj-tile:hover) .proj-tile {
+  flex: 0 0 var(--other-basis);
+}
+
+/* hovered tile */
+.proj-rail:has(.proj-tile:hover) .proj-tile:hover {
+  flex: 0 0 var(--expanded-effective);
+  background: transparent;
+  box-shadow: none;
+}
+
+/* CONTENT VISIBILITY (show only on hover; stays smooth) */
+.proj-item {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;                            /* allow internal grid to shrink */
+  background: transparent;
+  color: var(--ink);
+  box-shadow: none;
+
+  /* Make the image keep 16:9; meta sits below */
+  display: grid;
+  grid-template-rows: auto auto;
+  align-content: start;
+
+  border-radius: calc(var(--radius) - 12px);
+  padding: 0.5em;
+  padding-bottom: 3.0em;  /* room for CTA */
+  opacity: 0;
+  transition: opacity .35s ease;
+}
+.proj-tile:hover .proj-item { opacity: 1; }
+/* keep content visible when a tile is opened via the button */
+.proj-tile.open .proj-item { opacity: 1; }
+
+/* VERTICAL LABEL — auto-shrink to fit (container queries) */
+.proj-label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: .5em;
+  color: #000;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+
+  transform: rotate(-90deg);
+  transform-origin: center;
+  transition: transform .45s ease, opacity .3s ease;
+  pointer-events: none;
+
+  /* IMPORTANT: make the label a size container so inner text can scale */
+  container-type: inline-size;
+
+  /* no ellipsis; we’ll scale text instead */
+  white-space: nowrap;
+  overflow: visible;
+}
+
+/* Wrap the label text in <span class="fit">…</span> (or inject via JS) */
+.proj-label .fit {
+  display: inline-block;
+  line-height: 1;
+  /* Scale with the tile width using container query units. */
+  font-size: clamp(9px, 16cqi, 14px);
+}
+
+/* Optionally hide the label when hovered (same behavior as before) */
+.proj-tile:hover .proj-label { opacity: 0; transform: rotate(0deg); }
+
+/* IMAGE (16:9 showcase) */
+.proj-image {
+  background: rgb(241,241,241);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+
+  /* key: keep a real 16:9 frame, independent of container height */
+  aspect-ratio: 16 / 9;
+  width: 100%;
+}
+.proj-image img { width: 100%; height: 100%; object-fit: cover; }
+
+/* META */
+.proj-meta { margin-top: .5em; }
+.proj-meta h3 { margin: 0 0 2px 0; font-size: 14px; font-weight: 700; color: #111; }
+.proj-meta p  { margin: 0; font-size: 12px; color: #333333f0; }
+
+/* CTA */
+.proj-cta {
+  position: absolute;
+  left: .6em; bottom: .6em;
+  height: 2.0em; padding: 0 .8em;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent;
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: none;
+  font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .06em;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform .12s ease, filter .2s ease;
+}
+.proj-cta:hover   { filter: brightness(1.05); transform: translateY(-1px); }
+.proj-cta:active  { transform: translateY(0); }
+.proj-cta:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.proj-image img,
+.proj-image video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+
+/* === load the callout font once === */
+@font-face {
+  font-family: "Simple Nathalie";
+  src: url("/assets/fonts/Simple Nathalie.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* =========================
+   NOTE (single hanging)
+   — hangs from the BOTTOM of the rail,
+   — grows SIDEWAYS up to a limit,
+   — rope is longer and sits "behind" the rail,
+   — auto-scrolls if content overflows vertically.
+   ========================= */
+.proj-note {
+  position: absolute;
+  /* centered under the active tile, below the rail */
+  left: 50%;
+  top: 100%;
+  /* sideways reveal */
+  transform: translate(-50%, var(--note-gap, 12px)) scaleX(0);
+  transform-origin: top center;
+  opacity: 0;
+
+  /* visual style */
+  background: #ffffff92;
+  color: #000;
+  border: 2px solid #111;
+  border-radius: 12px;
+  padding: 10px 12px;
+  filter: drop-shadow(0 6px 22px rgba(0,0,0,.25));
+
+  /* font: your uploaded OTF */
+  font-family: "Simple Nathalie", var(--font, ui-sans-serif), system-ui;
+  font-size: 12px;         /* a bit smaller */
+  line-height: 1.3;
+
+  /* sizing: prefer width expansion, cap width, then allow vertical scroll */
+  width: max-content;                   /* grow sideways to fit content */
+  min-width: min(220px, 90vw);
+  max-width: min(560px, 92vw);          /* limit sideways growth */
+  max-height: clamp(140px, 28vh, 260px);
+  overflow: auto;
+
+  /* interaction/stacking */
+  transition: transform .28s ease, opacity .2s ease;
+  pointer-events: none;  /* informational only */
+  z-index: 2;            /* note sits above page; rope goes behind via -1 */
+}
+
+/* content spacing */
+.proj-note ul { margin: 0; padding-left: 18px; }
+.proj-note li { margin: 6px 0; }
+
+/* "rope" (behind the rail) + "knot" */
+.proj-note.rope-drop::before,
+.proj-note.rope-drop::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* rope: make it longer so more is visible below the rail */
+.proj-note.rope-drop::before {
+  bottom: 100%;
+  width: 2px;
+  height: var(--rope-length, 96px); /* ↑ increase this to show more rope */
+  background: linear-gradient(to bottom, #d9d2c2 0%, #c9bfa8 100%);
+  transform-origin: bottom center;
+  z-index: -1; /* <— puts rope "behind" the rail/tiles */
+}
+
+/* knot at the top edge of the note */
+.proj-note.rope-drop::after {
+  top: -8px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #c9bfa8;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.25);
+}
+
+/* Show only when the tile is open AND hovered (retract when leaving) */
+.proj-tile.open:hover .proj-note {
+  transform: translate(-50%, var(--note-gap, 12px)) scaleX(1);
+  opacity: 1;
+}
+
+/* Optional: gentle sway while open (sideways version) */
+@keyframes ropeSwayX {
+  0%   { transform: translate(-50%, var(--note-gap, 12px)) scaleX(1) rotate(-1deg); }
+  50%  { transform: translate(-50%, var(--note-gap, 12px)) scaleX(1) rotate(1deg); }
+  100% { transform: translate(-50%, var(--note-gap, 12px)) scaleX(1) rotate(-1deg); }
+}
+.proj-tile.open:hover .proj-note {
+  animation: ropeSwayX 3.5s ease-in-out infinite;
+}
+
+/* Small screens: keep it usable */
+@media (max-width: 600px) {
+  .proj-note {
+    max-width: 95vw;
+    max-height: min(48vh, 320px);
+  }
+}
+
+
+/* OVERLAY LINES / LABELS (if you use the SVG overlay) */
+.proj-curve{
+  fill: none;
+  stroke: rgba(0,0,0,.72);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 0 rgba(0,0,0,0)) drop-shadow(0 1px 0 rgba(255,255,255,.35));
+}
+.proj-overlay{
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  font-family: "Simple Nathalie", var(--font);
+}
+.proj-label-text.screen{
+  font-family: "Simple Nathalie", var(--font);
+  font-weight: 400; font-style: normal; font-size: 24px; letter-spacing: 0.2px;
+  fill: #111; stroke: none; paint-order: normal; filter: none;
+  text-rendering: geometricPrecision;
+}
+
+/* ===========================
+   OPTIONAL JS FALLBACK STYLES
+   (for browsers without :has)
+   =========================== */
+.proj-rail.is-hovering{
+  --gaps-total: calc(var(--gap) * (var(--tiles) - 1));
+  --max-expanded: calc(100% - (var(--tile-min-other) * (var(--tiles) - 1)) - var(--gaps-total));
+  --expanded-effective: max(0px, min(var(--tile-expanded), var(--max-expanded)));
+  --avail-for-others: calc(100% - var(--expanded-effective) - var(--gaps-total));
+  --other-basis-raw: calc(var(--avail-for-others) / (var(--tiles) - 1));
+  --other-basis: max(1px, max(var(--tile-min-other), var(--other-basis-raw)));
+}
+.proj-rail.is-hovering .proj-tile { flex: 0 0 var(--other-basis); }
+.proj-rail.is-hovering .proj-tile.is-active {
+  flex: 0 0 var(--expanded-effective);
+  background: transparent;
+  box-shadow: none;
+}
+.proj-tile.is-active .proj-item { opacity: 1; }
+.proj-tile.is-active .proj-label { opacity: 0; transform: rotate(0deg); }
+
+
+
+
+/* --- Social UI (scoped for CSS3D) --- */
+/* =========================
+   Social UI (scoped for CSS3D)
+   ========================= */
+
+/* Let CSS3D panels receive clicks, but keep the root non-blocking */
+.css3d-root { pointer-events: none; }
+.panel, .hud, .proj-rail, .proj-cta, .social-main { pointer-events: auto; }
+
+.social-main {
+  --card: 90px;       /* size of each card */
+  --alpha-bg: .16;    /* hover background opacity 0..1 */
+  --alpha-bd: .28;    /* base border opacity */
+  --alpha-bd-hover: .75;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  padding: 0.5em;
+  background: transparent;  /* no gradient/background */
+  user-select: none;
+}
+
+/* Rows */
+.social-main .up,
+.social-main .down {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5em;
+  justify-content: center;
+}
+
+/* Cards (transparent base + brand-tinted hover) */
+.social-main .card1,
+.social-main .card2,
+.social-main .card3,
+.social-main .card4 {
+  width: var(--card);
+  height: var(--card);
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  outline: none;
+
+  /* transparent base */
+  background: transparent;
+  box-shadow: none;
+
+  /* brand color comes from --brand per card */
+  border: 2px solid rgba(var(--brand, 0,0,0), var(--alpha-bd));
+  color: rgb(var(--brand, 0,0,0)); /* useful if you use currentColor */
+  transition: transform .2s ease, background-color .2s ease, border-color .2s ease;
+  will-change: transform, background-color, border-color;
+}
+
+/* Individual shapes + brand colors */
+.social-main .card1 { --brand: 0,119,181;  border-radius: 90px 5px 5px 5px; }   /* LinkedIn #0077b5 */
+.social-main .card2 { --brand: 99,102,241; border-radius: 5px 90px 5px 5px; }   /* Portfolio #6366f1 */
+.social-main .card3 { --brand: 0,0,0;      border-radius: 5px 5px 5px 90px; }   /* GitHub #000000 */
+.social-main .card4 { --brand: 211,47,47; border-radius: 5px 5px 90px 5px; }   /* Mail #d32f2f */
+
+/* Hover/focus: brand-tinted translucent background */
+.social-main :is(.card1,.card2,.card3,.card4):is(:hover,:focus-visible) {
+  background-color: rgba(var(--brand), var(--alpha-bg));
+  border-color: rgba(var(--brand), var(--alpha-bd-hover));
+  transform: scale(1.08);
+  cursor: pointer;
+}
+
+/* Keyboard focus (a11y) */
+.social-main .card1:focus-visible,
+.social-main .card2:focus-visible,
+.social-main .card3:focus-visible,
+.social-main .card4:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Icons: center by default (no positional nudges) */
+.social-main .linkedin,
+.social-main .portfolio,
+.social-main .github,
+.social-main .mail {
+  margin: 0;
+  display: block;
+}
+
+/* Default icon colors */
+.social-main .linkedin  { fill: #0077b5; }
+.social-main .portfolio { fill: #6366f1; }
+/* GitHub SVG uses a single <path>; set its fill explicitly */
+.social-main .github path { fill: #000; transition: fill .2s ease; }
+
+/* Mail SVG has multiple paths; leave base fills in SVG.
+   We only override on hover for specific elements. */
+
+/* Hover icon color inversions (match your original behavior) */
+.social-main .card1:hover .linkedin   { fill: #fff; }
+.social-main .card2:hover .portfolio  { fill: #fff; }
+.social-main .card3:hover .github path { fill: #fff; }
+
+/* Mail: white envelope + red circle/flap on hover */
+.social-main .card4:hover .mail circle { fill: #fff; }                    /* outer circle */
+.social-main .card4:hover .mail path:nth-child(2) { fill: #d32f2f; }      /* envelope body */
+.social-main .card4:hover .mail path:nth-child(3) { fill: #fff; }         /* mail flap */
+
+/* Misc (if used elsewhere in your UI) */
+.proj-arrowhead { fill: #7c3aed; }
+
+/* Anchor reset inside cards */
+.social-main a { text-decoration: none; }
+
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .proj-tile { transition: none; }
+  .proj-item { transition: none; }
+  .proj-label { transition: none; }
+}
+
+
+
+/* Make badges roomy enough for the bigger icon */
+.tools .badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--tool-icon-size) + 12px);
+  height: calc(var(--tool-icon-size) + 12px);
+  padding: 6px;                /* tweak if you want tighter/looser */
+  border-radius: 12px;         /* keep your current shape */
+}
+
+/* Grow the logo itself */
+.tools .badge img {
+  width: var(--tool-icon-size);
+  height: var(--tool-icon-size);
+  object-fit: contain;
+  display: block;
+}
+
+/* Size & base layout */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;          /* a touch more breathing room */
+  margin: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  will-change: transform;
+}
+
+/* Badge hover lift */
+.badge:hover {
+  transform: translateY(-2px) scale(1.06);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+}
+
+/* Icon size (override inline attrs) */
+.badge svg {
+  width: 32px;   /* bump this to 32px if you want even larger */
+  height: 32px;
+  transition: transform 0.25s cubic-bezier(.2,.8,.2,1), filter 0.25s ease;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+/* Icon hover micro-animation */
+.badge:hover svg {
+  transform: scale(1.18) rotate(-4deg);
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
+}
+
+/* Press feedback */
+.badge:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Keyboard accessibility */
+.badge:focus-visible {
+  outline: 2px solid rgba(78, 202, 230, 0.9);
+  outline-offset: 2px;
+}
+
+/* headings + divider */
+.subhead {
+  font-size: 0.95rem;
+  opacity: 0.85;
+  letter-spacing: 0.02em;
+  margin: 0; /* keep tight */
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  border-radius: 1px;
+}
+
+/* layout tweaks (reuse your .row utilities) */
+.tools, .skills { gap: 10px; flex-wrap: wrap; }
+
+/* icon badges (tools) */
+.badge.is-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+.badge.is-icon img {
+  width: 28px;   /* bump icon size */
+  height: 28px;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* text chips (skills) */
+.chip {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: var(--outline) solid rgba(255,255,255,0.35);
+  background: transparent;
+  font-weight: 500;
+  line-height: 1;
+  user-select: none;
+  transition: transform 120ms ease, border-color 120ms ease;
+}
+.chip:hover { transform: translateY(-1px); border-color: var(--accent); }
+
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .badge, .badge svg { transition: none; }
+  .badge:hover, .badge:hover svg { transform: none; }
+}
+
+.badge svg { width: 20px; height: 20px; display: block; }
+
+
+/* Small screens */
+@media (max-width: 640px) {
+  .panel[data-panel="projects"]{ width: clamp(420px, 90vw, 560px); }
+  .proj-rail { height: 260px; }
+  .proj-callout { max-width: 180px; font-size: 11px; }
+}

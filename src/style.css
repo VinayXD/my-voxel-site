@@ -1,0 +1,26 @@
+
+/* Basic reset for demo */
+html, body { height: 100%; margin: 0; overflow: hidden; font-family: system-ui, sans-serif; }
+canvas { display: block; }
+
+/* HUD */
+.hud { position: fixed; inset: 0; pointer-events: none; }
+.hud .rail-controls { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; pointer-events: auto; }
+.hud .rail-controls button { padding: 6px 10px; border-radius: 8px; border: 0; background:#0f172a; color: #fff; opacity: .9; }
+.hud .level-indicators { display: flex; gap: 10px; background: rgba(15, 23, 42, .5); padding: 4px 8px; border-radius: 10px; }
+.hud .level-indicators span { padding: 4px 8px; border-radius: 6px; color: #e5e7eb; cursor: pointer; }
+.hud .level-indicators span.active { background: #334155; color: #fff; }
+
+/* Hub controls (Projects level) */
+.hud .hub-controls { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 14px; pointer-events: auto; }
+.hud .hub-controls button { padding: 8px 12px; border-radius: 999px; background:#0f172a; color: #fff; border: 0; }
+.hud .hub-controls .faces { display: flex; gap: 10px; background: rgba(15, 23, 42, .5); padding: 8px 10px; border-radius: 999px; }
+.hud .hub-controls .dot { width: 12px; height: 12px; border-radius: 999px; background: #94a3b8; border: 0; }
+.hud .hub-controls .dot.active { background: #ffffff; }
+
+/* Hub Panels (CSS3D) */
+.hub-panel { width: 320px; min-height: 180px; border-radius: 14px; backdrop-filter: blur(6px); background: rgba(0,0,0,.55); color: #fff; box-shadow: 0 10px 30px rgba(0,0,0,.4); display: grid; place-items: center; padding: 16px; }
+.hub-panel .panel-inner { text-align: center; }
+.hub-panel h3 { margin: 6px 0 8px; font-size: 18px; }
+.hub-panel p { margin: 0; font-size: 13px; opacity: .9; }
+
