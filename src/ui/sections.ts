@@ -3,9 +3,9 @@
 // Panels are restyled via /src/styles/ui.css
 
 // note: no leading slash, no ?url
-const ICON = '/assets/icon';
-const RESUME_URL = '/assets/Vinay_Bloxd.pdf';
-
+// src/ui/sections.ts
+const ICON = `${import.meta.env.BASE_URL}assets/icon`;
+const RESUME_URL = `${import.meta.env.BASE_URL}assets/Vinay_WebGame.pdf`;
 
 
 function q<T extends Element>(root: ParentNode, sel: string) {
@@ -20,7 +20,7 @@ export function createHeroPanelEl() {
   el.innerHTML = `
     <h1>Vinay Peddireddy</h1>
     <h2>Showcasing my Voxel Game</h2>
-    <p class="small">Fly and explore — This website is meant to showcase work built using a tech stack similar to Bloxd.io. Inspired to work with the Bloxd.io team, I created this site to highlight the mechanics and features I developed in a voxel prototype.</p>
+    <p class="small">Fly and explore — This website is meant to showcase work built using a tech stack that is align with Preloaded. Inspired to work with the Preloaded team, I created this site to highlight the mechanics and features I developed in a voxel prototype.</p>
     <div class="row mt-10">
       <button class="btn" id="aboutBtn" aria-controls="aboutBox" aria-expanded="false">
         Why this site? (tap to read)
@@ -265,17 +265,7 @@ const tiles: TileData[] = [
   noteB:'Block-aware vertical stepping and synced motion/animation.'
 },
 
-{ id:'p6', title:'Textures & Block VFX',
-  img:'assets/projects/textures.jpg',
-  video:'assets/projects/Fp6.mp4',
-  poster:'assets/projects/textures.jpg',
-  summary:'I hand-painted block textures in Blockbench and added a flipbook effect for breaking blocks.',
-  detail:'Consistent atlas/UVs; crisp filtering for readable pixel art. Flipbook animation for breaking the block. Seamless continues textures for blocks.',
-  label:'Textures', 
-  noteTl:'Consistent atlas/UVs; crisp filtering for readable pixel art.', 
-  noteTr:'Flipbook animation for breaking the block.', 
-  noteB:'Seamless continues textures for blocks.'
-},
+
 
 { id:'p7', title:'Game Physics',
   img:'assets/projects/physics.jpg',
