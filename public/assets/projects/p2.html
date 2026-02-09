@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Description</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="mediaqueries.css">
+    
+</head>
+
+    
+
+<body>
+  
+
+ 
+    <nav id = "desktop-nav">
+        <div>
+            <a href="index.html#profile">
+                <button class="cta">
+                <span>Home Page</span>
+                <svg width="15px" height="10px" viewBox="0 0 13 10">
+                <path d="M1,5 L11,5"></path>
+            <polyline points="8 1 12 5 8 9"></polyline>
+      </svg>
+    </button>
+            </a>
+        </div>
+        
+        <div>
+          <ul class="nav-links">
+              
+            <a href="p1.html"><li class="blue-button"><span>1</span></li></a>
+            <a href="p2.html"><li class="blue-button"><span>2</span></li></a>
+            <a href="p3.html"><li class="blue-button"><span>3</span></li></a>
+            
+            <a href="p4.html"><li class="blue-button"><span>4</span></li></a>
+            <a href="p5.html"><li class="blue-button"><span>5</span></li></a>
+            <a href="p6.html"><li class="blue-button"><span>6</span></li></a>
+            <a href="p7.html"><li class="blue-button"><span>7</span></li></a>
+            <a href="p8.html"><li class="blue-button"><span>8</span></li></a>
+            <a href="p9.html"><li class="blue-button"><span>9</span></li></a>
+            
+            
+      </div>
+    </nav>
+    <nav id="hamburger-nav">
+        <div>
+            <a href="index.html#profile">About</a>
+            <div class="logo">Vinay Peddireddy</div>
+            
+        </div>
+        
+        <div class="hamburger-menu">
+            <div class="hamburger-icon" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="menu-links">
+                <li><a href="index.html#about" onclick="toggleMenu()">About</a></li>
+                <li><a href="index.html#experience" onclick="toggleMenu()">Experience</a></li>
+                <li><a href="index.html#projects" onclick="toggleMenu()">Projects</a></li>
+                <li><a href="index.html#contact" onclick="toggleMenu()">Contact</a></li>
+            </div>
+        </div>
+    </nav>
+    
+    
+    <section class="Projectsdescribtion">
+      
+      <h2>Farmers’ Market: A Strategic and Deceptive Card Game</h2>
+     
+        
+
+      <div class = "description" >
+     
+        
+        
+          <div class="slider">
+            <div class="slider-container">
+              <ul class="slider-slides">
+                <li id="slide1">
+                  
+                    <img src="/Assets/cardformat.PNG" alt="" />
+                  
+                </li>
+                <li id="slide2">
+                  <div class="slide-image-container"> 
+
+                    <img src="/Assets/Rules.jpeg" alt="" />
+                   
+                      <button 
+                      class="btn btn-color-2" 
+                      onclick="window.open('./Assets/Rules.pdf')"
+                  >Download Rules
+                      </button>
+                  
+                </li>
+                <li id="slide3">
+                  <div class="slide-image-container"> 
+                    <img src="/Assets/Capture.PNG" alt="" />
+                    <button 
+                      class="btn btn-color-2" 
+                      onclick="window.open('./Assets/Playtest.pdf')"
+                  >Download Playtest report
+                      </button>
+                  </div>
+                </li>
+                
+              </ul>
+          
+              <ul class="slider-thumbnails">
+                <li>
+                  <a href="#slide1"><img src="/Assets/cardformat.PNG" /></a>
+                </li>
+                <li>
+                  <a href="#slide2"><img src="/Assets/Rules.jpeg" /></a>
+                </li>
+                <li>
+                  <a href="#slide3"><img src="/Assets/Capture.PNG" /></a>
+                </li>
+                
+              </ul>
+            </div>
+            </div>
+        
+          
+      
+          
+       
+          
+        
+          <div>
+            
+              <p>
+                Welcome to Farmers' Market, where you take on the role of a savvy farmer competing against rivals to sell all your animals and head home first. This fast-paced, strategy-driven game challenges players to bluff, call out lies, and create sequences to secure victory.
+                This project introduces the fundamentals of game design, exploring both physical and digital games. It covers game elements, development from concept to prototype, 
+                and playtesting to final design.
+              
+              <ul>
+                <h3>Game Components</h3>
+
+                <p class="p1">Farm Animal Cards</p>
+                <p>Features nine types of animals in four colors. 
+                  The back of each card has a sealed crate image.</p>
+                <p class="p1">Power Cards</p>
+                <p>Special cards that act as wildcards to complete sequences.</p>
+                <p class="p1">Color Tokens</p>
+                <p>Used to indicate the announced color of the card in play.
+                </p>
+                <p class="p1">Auction Hammer Card</p>
+                <p>Marks the starting player for each round.
+                </p>
+                
+                
+              
+              
+              </ul>
+              <h3>Gameplay Overview</h3>
+              <p >The game alternates between two phases:</p>
+                
+                <p class="p1">1.Auction Phase:</p>
+                <p>The auctioneer (player with the hammer card) nominates an animal by playing a card face-down and declaring its type and color. 
+                  Players take turns either playing matching cards, bluffing, or passing.</p>
+                <p class="p1">2.Action Phase:</p>
+                <p>Players can call out bluffs, take cards, or pass. Outcomes depend on whether 
+                  suspicions are correct, influencing the flow of cards and strategies.
+                </p>
+
+                <p class="p1">
+                  Winning the Game:
+                </p>
+                <p>
+                  The game ends when a player:
+
+                    Discards   all their cards.
+                    or last remianing cards are valid sequence of cards (e.g., three or more consecutively numbered cards of the same color). 
+                </p>
+                
+            
+               
+                <h3> Key Features</h3>
+                <p class="p1">Mechanics:</p> 
+                <p>Decide when to lie or call out opponents for high-risk, high-reward gameplay.</p> 
+                <p class="p1">Power Cards:</p> 
+                <p>Use these strategically to complete sequences and gain an edge.</p>
+                <p class="p1">Dynamic Rounds:</p>
+                <p>The auction hammer rotates, ensuring every player has a chance to lead and control the game’s pace.
+                </p> 
+ 
+           
+        </div>
+      </div>
+      
+
+      
+      
+    </section>
+
+    
+    
+      
+    
+            
+    
+    
+    <footer>
+      <nav>
+          <div class="nav-links-container">
+              <ul class="nav-links">
+              <li><a href="index.html#about">About</a></li>
+              <li><a href="index.html#experience">Experience</a></li>
+              <li><a href="index.html#projects">Projects</a></li>
+              </ul>
+
+          </div>
+      </nav>
+      <p>Copyright &#169; 2025 Vinay reddy. All Rights Reserved.</p>
+  </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.5.0/p5.js"></script>
+<script src="orgin.js" defer></script>
+</body>
+</html>
